@@ -38,6 +38,7 @@ def build_graph():
     builder.add_edge("general",END)
 
     app=builder.compile()
+    return app
 
 
 
@@ -86,7 +87,7 @@ def start_helpdesk():
 
         full_query=query_type + " " + user_query
 
-        response=app.invoke({"user_query": user_query})
+        response=app.invoke({"user_query": full_query})
         print(response.get("response"))
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
-from app.nodes.placements import get_placementstats
-from app.nodes.eligibility import get_eligibility
-from app.nodes.general import get_generalchatbot
-from app.nodes.guidelines import get_guidelines
+from app.nodes.placements import placementstats_node
+from app.nodes.eligibility import eligibility_node
+from app.nodes.general import generalchatbot_node
+from app.nodes.guidelines import guidelines_node
 from app.state import HelpdeskState
 
 def router_node(state: HelpdeskState):

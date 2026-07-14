@@ -8,7 +8,6 @@ st.title("TNP Helpdesk Analytics")
 
 LOG_FILE = "data/query_log.csv"
 
-
 def has_data(file_path):
     if not os.path.exists(file_path):
         return False
@@ -18,7 +17,6 @@ def has_data(file_path):
         return False
 
 if not has_data(LOG_FILE):
-    
     col1, col2 = st.columns(2)
     col1.metric("Total Student Inquiries", 0)
     col2.metric("Unique Intent Categories Traced", 0)
@@ -26,6 +24,11 @@ if not has_data(LOG_FILE):
     st.info("No query logs available yet. Data will appear once students start using the app!")
 else:
     df = pd.read_csv(LOG_FILE)
+    
+    # FORCE ALL COLUMN NAMES TO LOWERCASE (Fixes any capitalization mismatch instantly)
+    df.columns = df.columns.str.lower()
+
+    # Safely parse the lowercase timestamp
     df['timestamp'] = pd.to_datetime(df['timestamp'])
 
     col1, col2 = st.columns(2)

@@ -1,0 +1,197 @@
+{
+  "companies": [
+    {"name": "Microsoft",
+      "min_cgpa": 7.5,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ],
+      "oa_round": "Yes - Coding + MCQ",
+      "interview_rounds": 3,
+      "other_criteria": "No standing backlog at any point"
+    },
+    {"name": "Google",
+      "min_cgpa": 8.0,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE",
+        "IT"
+      ],
+      "oa_round": "Yes - Coding",
+      "interview_rounds": 4,
+      "other_criteria": "Prior internship preferred, not mandatory"
+    },
+    {"name": "Adobe",
+      "min_cgpa": 7.5,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE"
+      ],
+      "oa_round": "Yes - Coding + Aptitude",
+      "interview_rounds": 3,
+      "other_criteria": "Strong DSA fundamentals expected"
+    },
+    {"name": "Goldman Sachs",
+      "min_cgpa": 7.0,
+      "max_active_backlogs": 1,
+      "backlog_note": "1 (cleared before joining)",
+      "eligible_branches": [
+        "CSE",
+        "IT"
+      ],
+      "oa_round": "Yes - Coding + Aptitude",
+      "interview_rounds": 3,
+      "other_criteria": "Puzzle-based interview round included"
+    },
+    {"name": "JPMorgan Chase & Co.",
+      "min_cgpa": 7.0,
+      "max_active_backlogs": 1,
+      "backlog_note": "1",
+      "eligible_branches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ],
+      "oa_round": "Yes - Coding + MCQ",
+      "interview_rounds": 3,
+      "other_criteria": "HackerRank-based OA"
+    },
+    {"name": "Wells Fargo",
+      "min_cgpa": 6.5,
+      "max_active_backlogs": 1,
+      "backlog_note": "1",
+      "eligible_branches": [
+        "CSE",
+        "IT"
+      ],
+      "oa_round": "Yes - Coding",
+      "interview_rounds": 2,
+      "other_criteria": "Group discussion round included"
+    },
+    {"name": "Visa",
+      "min_cgpa": 7.5,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE"
+      ],
+      "oa_round": "Yes - Coding + Aptitude",
+      "interview_rounds": 3,
+      "other_criteria": null
+    },
+    {"name": "Amazon",
+      "min_cgpa": 7.0,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE",
+        "IT"
+      ],
+      "oa_round": "Yes - Coding",
+      "interview_rounds": 4,
+      "other_criteria": "Bar-raiser round included"
+    },
+    {"name": "Salesforce",
+      "min_cgpa": 7.5,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE"
+      ],
+      "oa_round": "Yes - Coding",
+      "interview_rounds": 3,
+      "other_criteria": null
+    },
+    {"name": "SAP Labs India",
+      "min_cgpa": 7.0,
+      "max_active_backlogs": 1,
+      "backlog_note": "1",
+      "eligible_branches": [
+        "CSE",
+        "IT"
+      ],
+      "oa_round": "Yes - Coding + Aptitude",
+      "interview_rounds": 3,
+      "other_criteria": null
+    },
+    {"name": "Barclays",
+      "min_cgpa": 6.5,
+      "max_active_backlogs": 1,
+      "backlog_note": "1",
+      "eligible_branches": [
+        "CSE",
+        "IT",
+        "ECE"
+      ],
+      "oa_round": "Yes - Coding + MCQ",
+      "interview_rounds": 2,
+      "other_criteria": null
+    },
+    {"name": "Deloitte",
+      "min_cgpa": 6.0,
+      "max_active_backlogs": 2,
+      "backlog_note": "2",
+      "eligible_branches": [
+        "CSE",
+        "IT",
+        "All Branches"
+      ],
+      "oa_round": "Yes - Aptitude",
+      "interview_rounds": 2,
+      "other_criteria": "Case study round for some roles"
+    },
+    {"name": "Cisco",
+      "min_cgpa": 7.0,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE",
+        "ECE"
+      ],
+      "oa_round": "Yes - Coding",
+      "interview_rounds": 3,
+      "other_criteria": "Networking fundamentals tested"
+    },
+    { "name": "Morgan Stanley",
+      "min_cgpa": 7.0,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE",
+        "IT"
+      ],
+      "oa_round": "Yes - Coding + Aptitude",
+      "interview_rounds": 3,
+      "other_criteria": null
+    },
+    {"name": "American Express",
+      "min_cgpa": 6.5,
+      "max_active_backlogs": 1,
+      "backlog_note": "1",
+      "eligible_branches": [
+        "CSE",
+        "IT"
+      ],
+      "oa_round": "Yes - Coding + Aptitude",
+      "interview_rounds": 3,
+      "other_criteria": null
+    },
+    { "name": "ServiceNow",
+      "min_cgpa": 7.5,
+      "max_active_backlogs": 0,
+      "backlog_note": "0",
+      "eligible_branches": [
+        "CSE"
+      ],
+      "oa_round": "Yes - Coding",
+      "interview_rounds": 3,
+      "other_criteria": null
+    }
+  ],
+  "notes": "Sourced from TNP_Placement_Data.xlsx, Eligibility Criteria sheet."
+}

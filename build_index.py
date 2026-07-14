@@ -2,6 +2,21 @@ import os
 if os.path.exists("faiss_index/tnp_index/index.faiss"):
     print("FAISS index already exists. Delete the faiss_index/tnp_index folder if you want to rebuild it.")
     exit()
+# test_retriever.py
+import os
+from dotenv import load_dotenv
+from utils.rag_chain import load_vectorstore, get_retriever
+
+load_dotenv()
+api_key = os.getenv("GOOGLE_API_KEY")
+
+vectorstore = load_vectorstore(api_key)
+retriever = get_retriever(vectorstore, k=3)
+
+result = retriever.invoke("What kind of questions does a Product company ask in OA?")
+for doc in result:
+    print(doc.page_content[:200])
+    print("---")
 import pandas as pd
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
@@ -92,6 +107,32 @@ for i, doc in enumerate(results):
     print(doc.page_content)
     print(f"Source: {doc.metadata.get('source')}")
 
+# ---------- 7. Configure retriever ----------
+retriever = vectorstore.as_retriever(
+    search_type="mmr",
+    search_kwargs={
+        "k": 3,          # final number of chunks returned
+        "fetch_k": 10,   # considers top 10, then picks 3 diverse ones
+        "lambda_mult": 0.7  # 0 = max diversity, 1 = max relevance
+    }
+)
+
+# ---------- 8. Test the retriever ----------
+test_queries = [
+    "What is the eligibility CGPA for Microsoft?",
+    "What kind of questions does a Product company ask in OA?",
+    "Can I sit for a company after rejecting an offer?"
+]
+
+for q in test_queries:
+    print(f"\n=== Query: {q} ===")
+    results = retriever.invoke(q)
+    for i, doc in enumerate(results):
+        print(f"\n--- Result {i+1} ---")
+        print(doc.page_content[:300])
+        print(f"Source: {doc.metadata.get('source')}")
+
+
 # temporarily added
 query2 = "What kind of questions does a Product company ask in OA?"
 results2 = vectorstore.similarity_search(query2, k=3)
@@ -106,3 +147,4 @@ for i, doc in enumerate(results3):
     print(f"\n--- Result {i+1} ---")
     print(doc.page_content[:300])
     print(f"Source: {doc.metadata.get('source')}")
+

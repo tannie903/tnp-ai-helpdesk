@@ -2,10 +2,6 @@ import streamlit as st
 
 st.set_page_config(page_title="TNP AI Helpdesk", page_icon="🎓", layout="wide")
 
-# ---------------------------------------------------------------------
-# Imports from teammates' code — wrapped so a bad path gives a friendly
-# error instead of a raw traceback.
-# ---------------------------------------------------------------------
 try:
     from main import build_graph
 except Exception as e:

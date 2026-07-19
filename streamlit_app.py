@@ -99,6 +99,16 @@ if "messages" not in st.session_state:
 if "student" not in st.session_state:
     st.session_state.student = {"name": "", "branch": "", "year": "1"}
 
+if "category" not in st.session_state:
+    st.session_state.category = None  # set once the user picks a category on the welcome screen
+
+CATEGORY_MAP = {
+    "📊 Placement Stats": "placement",
+    "📋 Guidelines": "guideline",
+    "✅ Eligibility": "eligibility",
+    "💬 General": "general",
+}
+
 
 # ================= SIDEBAR =================
 with st.sidebar:
@@ -142,56 +152,61 @@ with st.sidebar:
 
     st.divider()
 
-    st.header("💬 Ask about")
-    query_type_label = st.radio(
-        "Pick a category, then type your question below",
-        ["Placement Stats", "Guidelines", "Eligibility", "General"],
-        index=3,
-    )
-    query_type_map = {
-        "Placement Stats": "placement",
-        "Guidelines": "guideline",
-        "Eligibility": "eligibility",
-        "General": "general",
-    }
-
     if st.button("🗑️ Clear chat"):
         st.session_state.messages = []
         st.rerun()
 
 
-# ================= MAIN CHAT AREA =================
+# ================= MAIN AREA =================
 st.title("🎓 TNP AI Helpdesk")
 
 name = st.session_state.student["name"]
-st.caption(
-    f"Hi {name}! Ask me about placement stats, interview/OA guidelines, or eligibility."
-    if name else
-    "Ask me about placement stats, interview/OA guidelines, or eligibility."
-)
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+if st.session_state.category is None:
+    # ---------- Welcome screen — shown before any category is picked ----------
+    greeting = f"Hi {name}! 👋" if name else "Hi! 👋"
+    st.subheader(f"{greeting} Welcome to the TNP Chatbot of IGDTUW")
+    st.write("What would you like to know?")
 
-user_query = st.chat_input("Type your question...")
+    cols = st.columns(4)
+    for col, label in zip(cols, CATEGORY_MAP.keys()):
+        with col:
+            if st.button(label, use_container_width=True):
+                st.session_state.category = label
+                st.rerun()
 
-if user_query:
-    st.session_state.messages.append({"role": "user", "content": user_query})
-    with st.chat_message("user"):
-        st.markdown(user_query)
+else:
+    # ---------- Normal chat screen ----------
+    top_left, top_right = st.columns([5, 1])
+    with top_left:
+        st.caption(f"Category: **{st.session_state.category}**")
+    with top_right:
+        if st.button("🔄 Change"):
+            st.session_state.category = None
+            st.rerun()
 
-    # Prepend the chosen category keyword, same trick main.py's CLI uses,
-    # so router_node's keyword matching reliably picks the right node.
-    full_query = f"{query_type_map[query_type_label]} {user_query}"
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            try:
-                result = graph_app.invoke({"user_query": full_query})
-                response = result.get("response", "Sorry, I couldn't generate a response.")
-            except Exception as e:
-                response = f"Something went wrong while generating a response: {e}"
-        st.markdown(response)
+    user_query = st.chat_input("Type your question...")
 
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    if user_query:
+        st.session_state.messages.append({"role": "user", "content": user_query})
+        with st.chat_message("user"):
+            st.markdown(user_query)
+
+        # Prepend the chosen category keyword, same trick main.py's CLI uses,
+        # so router_node's keyword matching reliably picks the right node.
+        full_query = f"{CATEGORY_MAP[st.session_state.category]} {user_query}"
+
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                try:
+                    result = graph_app.invoke({"user_query": full_query})
+                    response = result.get("response", "Sorry, I couldn't generate a response.")
+                except Exception as e:
+                    response = f"Something went wrong while generating a response: {e}"
+            st.markdown(response)
+
+        st.session_state.messages.append({"role": "assistant", "content": response})

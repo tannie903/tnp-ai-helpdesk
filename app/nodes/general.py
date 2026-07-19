@@ -3,14 +3,26 @@ from app.agent.lllmclient import get_llm
 
 
 def generalchatbot_node(state: HelpdeskState):
-    user_query= state["user_query"]
+    user_query = state.get("user_query", "")
+    chat_history = state.get("chat_history", [])
 
-    llm=get_llm()
+    
+    history_str = ""
+    for msg in chat_history:
+        role = "User" if msg.get("role") == "user" else "Assistant"
+        history_str += f"{role}: {msg.get('content', '')}\n"
+
+    llm = get_llm()
 
     prompt = f"""
-You are an expert placement mentor.
+You are an expert placement mentor. 
 
-Answer the question clearly and concisely.
+Review the chat history below for context before answering the user's latest question.
+
+---
+[Chat History]
+{history_str}
+---
 
 Question: {user_query}
 
@@ -21,15 +33,6 @@ Format:
 
 Keep the answer under 150 words.
 """
-
-    # try:
-    #     response = llm.invoke(prompt).strip()
-    # except Exception:
-    #     response = "Error generating response. Please try again."
-
-    # return {
-    #     "response": response
-    # }
 
     result = llm.invoke(prompt)
 
@@ -43,4 +46,3 @@ Keep the answer under 150 words.
     return {
         "response": response
     }
-        

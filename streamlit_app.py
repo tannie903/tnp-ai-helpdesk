@@ -55,10 +55,6 @@ import streamlit as st
 
 st.set_page_config(page_title="TNP AI Helpdesk", page_icon="🎓", layout="wide")
 
-# ---------------------------------------------------------------------
-# Imports from teammates' code — wrapped so a bad path gives a friendly
-# error instead of a raw traceback.
-# ---------------------------------------------------------------------
 try:
     from main import build_graph
 except Exception as e:
@@ -79,10 +75,6 @@ except Exception as e:
     st.stop()
 
 
-# ---------------------------------------------------------------------
-# Cache the compiled LangGraph app so it's only built once per session,
-# not re-built on every single chat message / rerun.
-# ---------------------------------------------------------------------
 @st.cache_resource
 def get_app():
     return build_graph()
@@ -90,9 +82,6 @@ def get_app():
 
 graph_app = get_app()
 
-# ---------------------------------------------------------------------
-# Session state
-# ---------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []  # [{"role": "user"/"assistant", "content": str}]
 
@@ -177,21 +166,24 @@ for msg in st.session_state.messages:
 user_query = st.chat_input("Type your question...")
 
 if user_query:
-    st.session_state.messages.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
         st.markdown(user_query)
 
-    # Prepend the chosen category keyword, same trick main.py's CLI uses,
-    # so router_node's keyword matching reliably picks the right node.
     full_query = f"{query_type_map[query_type_label]} {user_query}"
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             try:
-                result = graph_app.invoke({"user_query": full_query})
+                
+                result = graph_app.invoke({
+                    "user_query": full_query,
+                    "chat_history": st.session_state.messages
+                })
                 response = result.get("response", "Sorry, I couldn't generate a response.")
             except Exception as e:
                 response = f"Something went wrong while generating a response: {e}"
         st.markdown(response)
 
+    
+    st.session_state.messages.append({"role": "user", "content": user_query})
     st.session_state.messages.append({"role": "assistant", "content": response})

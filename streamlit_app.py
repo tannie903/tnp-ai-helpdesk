@@ -45,7 +45,7 @@ CATEGORY_MAP = {
     "💬 General": "general",
 }
 
-#SIDEBAR
+# SIDEBAR
 with st.sidebar:
     st.header("👋 Your Details")
     st.session_state.student["name"] = st.text_input(
@@ -96,43 +96,8 @@ with st.sidebar:
 st.title("🎓 TNP AI Helpdesk")
 
 name = st.session_state.student["name"]
-st.caption(
-    f"Hi {name}! Ask me about placement stats, interview/OA guidelines, or eligibility."
-    if name else
-    "Ask me about placement stats, interview/OA guidelines, or eligibility."
-)
-
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-user_query = st.chat_input("Type your question...")
-
-if user_query:
-    with st.chat_message("user"):
-        st.markdown(user_query)
-
-    full_query = f"{query_type_map[query_type_label]} {user_query}"
-
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            try:
-                
-                result = graph_app.invoke({
-                    "user_query": full_query,
-                    "chat_history": st.session_state.messages
-                })
-                response = result.get("response", "Sorry, I couldn't generate a response.")
-            except Exception as e:
-                response = f"Something went wrong while generating a response: {e}"
-        st.markdown(response)
-
-    
-    st.session_state.messages.append({"role": "user", "content": user_query})
-    st.session_state.messages.append({"role": "assistant", "content": response})
 
 if st.session_state.category is None:
-    
     greeting = f"Hi {name}! 👋" if name else "Hi! 👋"
     st.subheader(f"{greeting} Welcome to the TNP Chatbot of IGDTUW")
     st.write("What would you like to know?")
@@ -145,7 +110,6 @@ if st.session_state.category is None:
                 st.rerun()
 
 else:
-    
     top_left, top_right = st.columns([5, 1])
     with top_left:
         st.caption(f"Category: **{st.session_state.category}**")
@@ -154,6 +118,7 @@ else:
             st.session_state.category = None
             st.rerun()
 
+    # Display past chat history
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
@@ -161,21 +126,32 @@ else:
     user_query = st.chat_input("Type your question...")
 
     if user_query:
-        st.session_state.messages.append({"role": "user", "content": user_query})
+        # Display current query immediately on UI
         with st.chat_message("user"):
             st.markdown(user_query)
 
-        # Prepend the chosen category keyword, same trick main.py's CLI uses,
-        # so router_node's keyword matching reliably picks the right node.
+        # 1. Format prior history into (role, content) tuples
+        formatted_history = [
+            ("human" if m["role"] == "user" else "ai", m["content"])
+            for m in st.session_state.messages
+        ]
+
+        # 2. Prepend category for router matching
         full_query = f"{CATEGORY_MAP[st.session_state.category]} {user_query}"
 
+        # 3. Invoke graph with formatted prior history
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 try:
-                    result = graph_app.invoke({"user_query": full_query})
+                    result = graph_app.invoke({
+                        "user_query": full_query,
+                        "chat_history": formatted_history
+                    })
                     response = result.get("response", "Sorry, I couldn't generate a response.")
                 except Exception as e:
                     response = f"Something went wrong while generating a response: {e}"
             st.markdown(response)
 
+        # 4. Save both current turn messages to state AFTER execution
+        st.session_state.messages.append({"role": "user", "content": user_query})
         st.session_state.messages.append({"role": "assistant", "content": response})

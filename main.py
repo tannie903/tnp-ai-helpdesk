@@ -38,6 +38,7 @@ def build_graph():
 
 def start_helpdesk():
     app = build_graph()
+    cli_history = []  # Initialized history list for CLI
 
     print("Hi! Welcome to the TnP Helpdesk of IGDTUW")
     print("Please provide us your information first")
@@ -68,8 +69,6 @@ def start_helpdesk():
     print(f"\n{name} you can ask your query now !!")
     print("type 'exit' to end the conversation")
 
-   
-
     while True:
         user_query = input("\nAsk : ")
 
@@ -79,16 +78,20 @@ def start_helpdesk():
 
         full_query = query_type + " " + user_query
 
-       
+        # Pass formatted CLI history tuples
+        formatted_cli_history = [
+            ("human" if m["role"] == "user" else "ai", m["content"])
+            for m in cli_history
+        ]
+
         result = app.invoke({
             "user_query": full_query, 
-            "chat_history": cli_history
+            "chat_history": formatted_cli_history
         })
         
         response_text = result.get("response", "")
         print(response_text)
         
-       
         cli_history.append({"role": "user", "content": user_query})
         cli_history.append({"role": "assistant", "content": response_text})
 

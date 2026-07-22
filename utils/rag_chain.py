@@ -2,16 +2,26 @@ from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 
-def load_vectorstore(api_key):
+def load_vectorstore(api_key=None):
     """
     Loads the pre-built FAISS index from disk.
-    Person 2: call this once at app startup, then use .as_retriever()
-    on the result to plug into your chain.
     """
+    # Fetch key from parameter, or Streamlit secrets, or OS environment
+    resolved_key = (
+        api_key
+        or st.secrets.get("GOOGLE_API_KEY")
+        or st.secrets.get("GEMINI_API_KEY")
+        or os.getenv("GOOGLE_API_KEY")
+    )
+
+    if not resolved_key:
+        raise ValueError("Google API key was not found in Streamlit Secrets or function arguments!")
+
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/gemini-embedding-001",
-        google_api_key=api_key
+        google_api_key=resolved_key
     )
+    
     vectorstore = FAISS.load_local(
         "faiss_index/tnp_index",
         embeddings,

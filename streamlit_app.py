@@ -96,6 +96,40 @@ with st.sidebar:
 st.title("🎓 TNP AI Helpdesk")
 
 name = st.session_state.student["name"]
+st.caption(
+    f"Hi {name}! Ask me about placement stats, interview/OA guidelines, or eligibility."
+    if name else
+    "Ask me about placement stats, interview/OA guidelines, or eligibility."
+)
+
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+user_query = st.chat_input("Type your question...")
+
+if user_query:
+    with st.chat_message("user"):
+        st.markdown(user_query)
+
+    full_query = f"{query_type_map[query_type_label]} {user_query}"
+
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            try:
+                
+                result = graph_app.invoke({
+                    "user_query": full_query,
+                    "chat_history": st.session_state.messages
+                })
+                response = result.get("response", "Sorry, I couldn't generate a response.")
+            except Exception as e:
+                response = f"Something went wrong while generating a response: {e}"
+        st.markdown(response)
+
+    
+    st.session_state.messages.append({"role": "user", "content": user_query})
+    st.session_state.messages.append({"role": "assistant", "content": response})
 
 if st.session_state.category is None:
     

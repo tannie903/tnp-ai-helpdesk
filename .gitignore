@@ -186,4 +186,3 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Project-specific
-faiss_index/

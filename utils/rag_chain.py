@@ -1,6 +1,7 @@
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
+import streamlit as st
+import os
 
 def load_vectorstore(api_key=None):
     """

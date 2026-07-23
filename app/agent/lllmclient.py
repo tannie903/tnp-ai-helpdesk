@@ -1,20 +1,23 @@
+import os
 from dotenv import load_dotenv
-from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
-
-def get_llm() -> ChatHuggingFace:
-    """Create and return a ChatHuggingFace LLM instance.
-
-    Returns:
-        A ChatHuggingFace object wrapping a HuggingFaceEndpoint,
-        ready to be used in LangChain chains.
+def get_llm(model_name: str = "llama-3.1-8b-instant", temperature: float = 0.2):
     """
-    endpoint = HuggingFaceEndpoint(
-        repo_id="meta-llama/Llama-3.1-8B-Instruct",
-        task="conversational",
-        temperature=0.5,
-        max_new_tokens=512,
+    Returns an instance of ChatGroq using the specified model.
+    Recommended models:
+    - llama-3.1-8b-instant (Fast, ideal for intent routing & structured QA)
+    - llama-3.3-70b-versatile (More capable, ideal for complex reasoning/RAG)
+    """
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is missing from environment variables.")
+
+    llm = ChatGroq(
+        model_name=model_name,
+        temperature=temperature,
+        groq_api_key=api_key
     )
-    return ChatHuggingFace(llm=endpoint)
+    return llm

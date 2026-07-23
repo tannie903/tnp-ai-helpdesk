@@ -6,11 +6,10 @@ def generalchatbot_node(state: HelpdeskState):
     user_query = state.get("user_query", "")
     chat_history = state.get("chat_history", [])
 
-    
     history_str = ""
-    for msg in chat_history:
-        role = "User" if msg.get("role") == "user" else "Assistant"
-        history_str += f"{role}: {msg.get('content', '')}\n"
+    for role, content in chat_history:
+        speaker = "User" if role == "human" else "Assistant"
+        history_str += f"{speaker}: {content}\n"
 
     llm = get_llm()
 

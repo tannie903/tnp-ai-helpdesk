@@ -4,22 +4,35 @@ from app.agent.lllmclient import get_llm
 from app.rag.retriever_singleton import get_shared_retriever
 
 
-
 def _extract_cgpa(text: str):
-    match = re.search(r'(\d(?:\.\d{1,2})?)\s*(?:cgpa|gpa)?', text.lower())
+    text = text.lower()
+    # number before keyword: "8 cgpa" / "8.5 gpa"
+    match = re.search(r'(\d(?:\.\d{1,2})?)\s*(?:cgpa|gpa)', text)
+    if not match:
+        # keyword before number: "cgpa is 8" / "cgpa: 8.5" / "cgpa of 8"
+        match = re.search(r'(?:cgpa|gpa)\D{0,10}?(\d(?:\.\d{1,2})?)', text)
     if match:
         val = float(match.group(1))
         if 0 <= val <= 10:
             return val
     return None
 
+
 def eligibility_node(state: HelpdeskState):
     retriever = get_shared_retriever(k=4)
     user_query = state["user_query"]
 
-    # Prefer a dedicated cgpa field if you add one to state; else parse from query
-    user_cgpa = state.get("cgpa")
-    user_cgpa = float(user_cgpa) if user_cgpa else _extract_cgpa(user_query)
+    # 1. Try to find CGPA in the current message first
+    user_cgpa = _extract_cgpa(user_query)
+
+    # 2. If not found, fall back to scanning chat history (most recent turn first)
+    if user_cgpa is None:
+        for role, content in reversed(state.get("chat_history", [])):
+            if role == "human":
+                found = _extract_cgpa(content)
+                if found is not None:
+                    user_cgpa = found
+                    break
 
     docs = retriever.invoke(user_query)
     context = "\n\n".join(d.page_content for d in docs)

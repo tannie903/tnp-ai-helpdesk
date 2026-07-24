@@ -5,61 +5,79 @@ from app.rag.retriever_singleton import get_shared_retriever
 from utils.eligibility import get_company_names
 
 
+def _clean_text(text: str) -> str:
+    """Strips category keywords prepended by UI wrappers and normalizes whitespace."""
+    if not text:
+        return ""
+    text = text.lower().strip()
+    return re.sub(r'^(eligibility|guideline|guidelines|placement|placements|general)\s+', '', text).strip()
+
+
 def _extract_cgpa(text: str):
-    text = text.lower()
-    # number before keyword: "8 cgpa" / "8.5 gpa"
-    match = re.search(r'(\d(?:\.\d{1,2})?)\s*(?:cgpa|gpa)', text)
-    if not match:
-        # keyword before number: "cgpa is 8" / "cgpa: 8.5" / "cgpa of 8"
-        match = re.search(r'(?:cgpa|gpa)\D{0,10}?(\d(?:\.\d{1,2})?)', text)
-    if match:
-        val = float(match.group(1))
-        if 0 <= val <= 10:
-            return val
+    if not text:
+        return None
+
+    clean_text = _clean_text(text)
+
+    # Scans for any standalone CGPA value between 0.0 and 10.0
+    # Works for: "7.5", "eligibility 7.5", "my cgpa is 7.5", "8.2 cgpa"
+    matches = re.findall(r'\b(10(?:\.0{1,2})?|[0-9](?:\.[0-9]{1,2})?)\b', clean_text)
+
+    for num in matches:
+        try:
+            val = float(num)
+            if 0.0 <= val <= 10.0:
+                return val
+        except ValueError:
+            continue
+
     return None
 
 
-def _extract_company(text: str, companies: list):
-    text_low = text.lower()
-    for name in companies:
-        if name.lower() in text_low:
-            return name
-    return None
+def _get_role_and_content(item):
+    """Normalizes both dict and tuple chat history items."""
+    if isinstance(item, (tuple, list)):
+        return item[0], item[1]
+    elif isinstance(item, dict):
+        role = "human" if item.get("role") in ["user", "human"] else "ai"
+        return role, item.get("content", "")
+    return "", ""
 
 
 def eligibility_node(state: HelpdeskState):
     retriever = get_shared_retriever(k=4)
-    user_query = state["user_query"]
-    history = state.get("chat_history", [])
-    companies = get_company_names()
+    raw_user_query = state.get("user_query", "")
+    user_query = _clean_text(raw_user_query)
+    chat_history = state.get("chat_history", [])
 
-    # 1. Try to find CGPA in the current message first
-    user_cgpa = _extract_cgpa(user_query)
-    # ...and the company name too
-    company = _extract_company(user_query, companies)
-
-    # 2. If not found, fall back to scanning chat history (most recent turn first)
-    #    so a bare follow-up like "9" or a follow-up company name still resolves.
+    # 1. Extract CGPA: Check current message first, then search history backward
+    user_cgpa = _extract_cgpa(raw_user_query)
     if user_cgpa is None:
-        for role, content in reversed(history):
+        for item in reversed(chat_history):
+            role, content = _get_role_and_content(item)
             if role == "human":
                 found = _extract_cgpa(content)
                 if found is not None:
                     user_cgpa = found
                     break
 
-    if company is None:
-        for role, content in reversed(history):
-            if role == "human":
-                found = _extract_company(content, companies)
-                if found is not None:
-                    company = found
-                    break
+    # 2. Check if current input is just a number / short answer (e.g. "7.5")
+    is_bare_answer = (
+        _extract_cgpa(raw_user_query) is not None 
+        or len(user_query.split()) <= 3
+    )
 
-    # 3. Build the retrieval query from the *resolved* company name, not just
-    #    the raw current-turn text — otherwise a follow-up like "9" searches
-    #    the vector store for "9" and loses the company context entirely.
-    retrieval_query = f"{company} eligibility criteria" if company else user_query
+    # 3. If bare answer, pull the last substantive question from history
+    retrieval_query = user_query
+    if is_bare_answer:
+        for item in reversed(chat_history):
+            role, content = _get_role_and_content(item)
+            cleaned_content = _clean_text(content)
+            
+            # Find last human question that wasn't a pure CGPA answer
+            if role == "human" and _extract_cgpa(cleaned_content) is None and len(cleaned_content.split()) > 3:
+                retrieval_query = cleaned_content
+                break
 
     docs = retriever.invoke(retrieval_query)
     context = "\n\n".join(d.page_content for d in docs)
@@ -87,13 +105,15 @@ You are an eligibility-checking assistant for a college TNP cell.
 The student is asking about {company}. Their CGPA is {user_cgpa}.
 
 Use ONLY the context below to find the CGPA cutoff for {company}.
+Use ONLY the context below to find the CGPA cutoff for the company/role asked about in the question.
 Compare {user_cgpa} against that cutoff yourself and state clearly: ELIGIBLE or NOT ELIGIBLE,
 plus the cutoff you found. If no cutoff is mentioned in the context, say you don't have that data.
+Only answer about the specific company/role the student asked about — do not list other companies.
 
 Context:
 {context}
 
-Question: {user_query}
+Question: {retrieval_query}
 
 Answer:
 """
@@ -107,7 +127,7 @@ and ask them to share their CGPA so you can confirm eligibility.
 Context:
 {context}
 
-Question: {user_query}
+Question: {retrieval_query}
 
 Answer:
 """

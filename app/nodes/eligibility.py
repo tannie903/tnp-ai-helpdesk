@@ -2,7 +2,6 @@ import re
 from app.state import HelpdeskState
 from app.agent.lllmclient import get_llm
 from app.rag.retriever_singleton import get_shared_retriever
-from utils.eligibility import get_company_names
 
 
 def _clean_text(text: str) -> str:
@@ -84,27 +83,12 @@ def eligibility_node(state: HelpdeskState):
 
     llm = get_llm()
 
-    if company is None:
-        prompt = f"""
-You are an eligibility-checking assistant for a college TNP cell.
-The student hasn't mentioned which company/role they're asking about yet.
-Using ONLY the context below, ask them which company they mean (and their CGPA,
-if they haven't shared it either).
-
-Context:
-{context}
-
-Question: {user_query}
-
-Answer:
-"""
-    elif user_cgpa is not None:
+    if user_cgpa is not None:
         prompt = f"""
 You are an eligibility-checking assistant for a college TNP cell.
 
-The student is asking about {company}. Their CGPA is {user_cgpa}.
+The student's CGPA is {user_cgpa}.
 
-Use ONLY the context below to find the CGPA cutoff for {company}.
 Use ONLY the context below to find the CGPA cutoff for the company/role asked about in the question.
 Compare {user_cgpa} against that cutoff yourself and state clearly: ELIGIBLE or NOT ELIGIBLE,
 plus the cutoff you found. If no cutoff is mentioned in the context, say you don't have that data.
@@ -120,9 +104,9 @@ Answer:
     else:
         prompt = f"""
 You are an eligibility-checking assistant for a college TNP cell.
-The student is asking about {company} but hasn't shared their CGPA yet.
-Using ONLY the context below, tell them the CGPA cutoff for {company},
-and ask them to share their CGPA so you can confirm eligibility.
+The student didn't provide their CGPA. Using ONLY the context below, tell them
+the CGPA cutoff for the company/role they asked about, and ask them to share
+their CGPA so you can confirm eligibility.
 
 Context:
 {context}

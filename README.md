@@ -153,38 +153,35 @@ The **router agent** determines:
 * "What are the guidelines for Microsoft?"
 
 ---
-              User
-               │
-               ▼
-           Streamlit UI
-               │
-               ▼
-    Agent Router (LangGraph)
-               │
-               ▼
-+--------------------------------------------------+
-|              Query Type Detection                |
-+--------------------------------------------------+
-   │        │               │             │
-   ▼        ▼               ▼             ▼
-Placement  Guidelines  Eligibility  General Chatbot
-   │        │               │
-   └────────┴───────────────┘
-            │
-            ▼
-     FAISS Retriever
-            │
-            ▼
-   Context Retrieval
-            │
-            ▼
-        LLM Model
-            │
-            ▼
-     Generated Response
-            │
-            ▼
-       Streamlit UI
+```mermaid
+flowchart TD
+
+    A[User] --> B[Streamlit UI]
+
+    B --> C[Agent Router (LangGraph)]
+
+    C --> D{Query Type Detection}
+
+    D --> E[Placement Guidelines Module]
+    D --> F[Eligibility Check Module]
+    D --> G[General Chatbot Module]
+    D --> H[Policies & Rules Module]
+
+    E --> I[FAISS Retriever]
+    F --> I
+    G --> I
+    H --> I
+
+    I --> J[Context Retrieval Engine]
+
+    J --> K[LLM Model (OpenAI / LLM)]
+
+    K --> L[Response Generator]
+
+    L --> M[Streamlit UI]
+
+    M --> N[User]
+```
 
 ## 📸 Screenshots
 

@@ -158,25 +158,25 @@ flowchart TD
 
     A[User] --> B[Streamlit UI]
 
-    B --> C[Agent Router (LangGraph)]
+    B --> C[Agent Router - LangGraph]
 
     C --> D{Query Type Detection}
 
-    D --> E[Placement Guidelines Module]
-    D --> F[Eligibility Check Module]
-    D --> G[General Chatbot Module]
-    D --> H[Policies & Rules Module]
+    D --> E[Placement Guidelines]
+    D --> F[Eligibility Check]
+    D --> G[General Chatbot]
+    D --> H[Policies]
 
     E --> I[FAISS Retriever]
     F --> I
     G --> I
     H --> I
 
-    I --> J[Context Retrieval Engine]
+    I --> J[Context Retrieval]
 
-    J --> K[LLM Model (OpenAI / LLM)]
+    J --> K[LLM Model]
 
-    K --> L[Response Generator]
+    K --> L[Generated Response]
 
     L --> M[Streamlit UI]
 
